@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8.9)
+add_library(lib lib.cpp)
+add_executable(main main.c)
+target_include_directories(lib PRIVATE "${UTILS_INCLUDE_DIR}")
+target_link_libraries(lib PUBLIC ethcore devcrypto devcore)
+target_link_libraries(main PUBLIC lib curl cjson)
