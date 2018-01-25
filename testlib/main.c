@@ -13,7 +13,8 @@ int main(int argc, char** argv) {
     }
 
     char tx[1000];
-    signTx(atoi(argv[1]), argv[2], tx);
+    aliceClaimsPayment(argv[1], "1000000000000000000", "0x0000000000000000000000000000000000000000", "fa568b318cd6b1cfe0e28faa88a2e750dca006328479eb014f5cda2fb5a04463", tx, "0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41", argv[2], argv[3], atoi(argv[4]));
+    //aliceInitsEthDeal(argv[1], "1000000000000000000", "fa568b318cd6b1cfe0e28faa88a2e750dca006328479eb014f5cda2fb5a04463", tx, "0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41", argv[2], argv[3], atoi(argv[4]));
     CURL *curl;
     CURLcode res;
     struct curl_slist *headers = NULL;
