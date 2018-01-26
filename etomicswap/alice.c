@@ -10,9 +10,10 @@
 int main(int argc, char** argv) {
     enum { INIT_ETH, INIT_ERC20, ALICE_CLAIMS, BOB_CLAIMS, ALICE_APPROVES_ERC20 };
 
-    if (argc < 3) {
+    if (argc < 2) {
         return 1;
     }
+
     int action = atoi(argv[1]);
     char tx[1000];
     switch (action)
@@ -69,11 +70,12 @@ int main(int argc, char** argv) {
             );
             break;
         case ALICE_APPROVES_ERC20:
-            aliceApprovesErc20(
+            approveErc20(
                     "1000000000000000000",
+                    "0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a",
                     getenv("ALICE_PK"),
                     tx,
-                    atoi(argv[2])
+                    atoi(argv[1])
             );
             break;
         default:

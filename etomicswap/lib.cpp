@@ -25,9 +25,9 @@ void signTx(TransactionSkeleton& tx, char* secret, char* buffer) {
     }
 }
 
-void aliceApprovesErc20(char* amount, char* secret, char* buffer, int nonce) {
+void approveErc20(char* amount, char* from, char* secret, char* buffer, int nonce) {
     TransactionSkeleton tx;
-    tx.from = jsToAddress("0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a");
+    tx.from = jsToAddress(from);
     tx.to = jsToAddress("0xc0eb7AeD740E1796992A08962c15661bDEB58003");
     tx.value = 0; // exp10<18>();
     tx.gas = 300000;
@@ -137,6 +137,51 @@ void bobClaimsPayment(char* dealId, char* amount, char* tokenAddress, char* secr
        << "00000000000000000000000000000000000000000000000000000000000000c0"
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(aliceSecret));
+    tx.data = jsToBytes(ss.str());
+    signTx(tx, secret, buffer);
+    std::cout << tx.data << std::endl;
+}
+
+void bobSendsEthDeposit(char* depositId, char* amount, char* secret, char* buffer, char* alice, char* bobHash, int nonce) {
+    TransactionSkeleton tx;
+    tx.from = jsToAddress("0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41");
+    tx.to = jsToAddress("0x9387Fd3a016bB0205e4e131Dde886B9d2BC000A2");
+    tx.value = jsToU256(amount); // exp10<18>();
+    tx.gas = 300000;
+    tx.gasPrice = 100 * exp10<9>();
+    tx.nonce = nonce;
+    std::stringstream ss;
+    ss << "0xc2c5143f"
+       << toHex(jsToBytes(depositId))
+       << "000000000000000000000000"
+       << toHex(jsToAddress(alice))
+       << toHex(jsToBytes(bobHash))
+       << "000000000000000000000000";
+    tx.data = jsToBytes(ss.str());
+    signTx(tx, secret, buffer);
+    std::cout << tx.data << std::endl;
+}
+
+void bobClaimsDeposit(char* depositId, char* amount, char* tokenAddress, char* secret, char* buffer, char* alice, char* bobSecret, char* aliceCanClaimAfter, int nonce) {
+    TransactionSkeleton tx;
+    tx.from = jsToAddress("0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41");
+    tx.to = jsToAddress("0x9387Fd3a016bB0205e4e131Dde886B9d2BC000A2");
+    tx.value = 0; // exp10<18>();
+    tx.gas = 300000;
+    tx.gasPrice = 100 * exp10<9>();
+    tx.nonce = nonce;
+    std::stringstream ss;
+    ss << "0x1dbe6508"
+       << toHex(jsToBytes(depositId))
+       << toHex(toBigEndian(jsToU256(amount)))
+       << toHex(toBigEndian(jsToU256(aliceCanClaimAfter)))
+       << "000000000000000000000000"
+       << toHex(jsToAddress(alice))
+       << "000000000000000000000000"
+       << toHex(jsToAddress(tokenAddress))
+       << "00000000000000000000000000000000000000000000000000000000000000c0"
+       << "0000000000000000000000000000000000000000000000000000000000000020"
+       << toHex(jsToBytes(bobSecret));
     tx.data = jsToBytes(ss.str());
     signTx(tx, secret, buffer);
     std::cout << tx.data << std::endl;
