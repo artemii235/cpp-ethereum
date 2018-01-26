@@ -36,7 +36,7 @@ void aliceApprovesErc20(char* amount, char* secret, char* buffer, int nonce) {
     std::stringstream ss;
     ss << "0x095ea7b3"
        << "000000000000000000000000"
-       << toHex(jsToAddress("0x9387Fd3a016bB0205e4e131Dde886B9d2BC000A2"))
+       << toHex(jsToAddress("0xe1D4236C5774D35Dc47dcc2E5E0CcFc463A3289c"))
        << toHex(toBigEndian(jsToU256(amount)));
     tx.data = jsToBytes(ss.str());
     signTx(tx, secret, buffer);
@@ -46,7 +46,7 @@ void aliceApprovesErc20(char* amount, char* secret, char* buffer, int nonce) {
 void aliceInitsEthDeal(char* dealId, char* amount, char* secret, char* buffer, char* bob, char* aliceHash, char* bobHash, int nonce) {
     TransactionSkeleton tx;
     tx.from = jsToAddress("0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a");
-    tx.to = jsToAddress("0x2d379DCCDabBAB4BE6B8bEfA7352CBb88af705C1");
+    tx.to = jsToAddress("0xe1D4236C5774D35Dc47dcc2E5E0CcFc463A3289c");
     tx.value = jsToU256(amount); // exp10<18>();
     tx.gas = 300000;
     tx.gasPrice = 100 * exp10<9>();
@@ -65,10 +65,35 @@ void aliceInitsEthDeal(char* dealId, char* amount, char* secret, char* buffer, c
     std::cout << tx.data << std::endl;
 }
 
+void aliceInitsErc20Deal(char* dealId, char* amount, char* tokenAddress, char* secret, char* buffer, char* bob, char* aliceHash, char* bobHash, int nonce) {
+    TransactionSkeleton tx;
+    tx.from = jsToAddress("0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a");
+    tx.to = jsToAddress("0xe1D4236C5774D35Dc47dcc2E5E0CcFc463A3289c");
+    tx.value = 0; // exp10<18>();
+    tx.gas = 300000;
+    tx.gasPrice = 100 * exp10<9>();
+    tx.nonce = nonce;
+    std::stringstream ss;
+    ss << "0x184db3bf"
+       << toHex(jsToBytes(dealId))
+       << toHex(toBigEndian(jsToU256(amount)))
+       << "000000000000000000000000"
+       << toHex(jsToAddress(bob))
+       << toHex(jsToBytes(aliceHash))
+       << "000000000000000000000000"
+       << toHex(jsToBytes(bobHash))
+       << "000000000000000000000000"
+       << "000000000000000000000000"
+       << toHex(jsToAddress(tokenAddress));
+    tx.data = jsToBytes(ss.str());
+    signTx(tx, secret, buffer);
+    std::cout << tx.data << std::endl;
+}
+
 void aliceClaimsPayment(char* dealId, char* amount, char* tokenAddress, char* secret, char* buffer, char* bob, char* aliceHash, char* bobSecret, int nonce) {
     TransactionSkeleton tx;
     tx.from = jsToAddress("0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a");
-    tx.to = jsToAddress("0x2d379DCCDabBAB4BE6B8bEfA7352CBb88af705C1");
+    tx.to = jsToAddress("0xe1D4236C5774D35Dc47dcc2E5E0CcFc463A3289c");
     tx.value = 0; // exp10<18>();
     tx.gas = 300000;
     tx.gasPrice = 100 * exp10<9>();
@@ -86,6 +111,32 @@ void aliceClaimsPayment(char* dealId, char* amount, char* tokenAddress, char* se
        << "00000000000000000000000000000000000000000000000000000000000000c0"
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(bobSecret));
+    tx.data = jsToBytes(ss.str());
+    signTx(tx, secret, buffer);
+    std::cout << tx.data << std::endl;
+}
+
+void bobClaimsPayment(char* dealId, char* amount, char* tokenAddress, char* secret, char* buffer, char* alice, char* aliceSecret, char* bobHash, int nonce) {
+    TransactionSkeleton tx;
+    tx.from = jsToAddress("0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41");
+    tx.to = jsToAddress("0xe1D4236C5774D35Dc47dcc2E5E0CcFc463A3289c");
+    tx.value = 0; // exp10<18>();
+    tx.gas = 300000;
+    tx.gasPrice = 100 * exp10<9>();
+    tx.nonce = nonce;
+    std::stringstream ss;
+    ss << "0x392ec66b"
+       << toHex(jsToBytes(dealId))
+       << toHex(toBigEndian(jsToU256(amount)))
+       << "000000000000000000000000"
+       << toHex(jsToAddress(tokenAddress))
+       << "000000000000000000000000"
+       << toHex(jsToAddress(alice))
+       << toHex(jsToBytes(bobHash))
+       << "000000000000000000000000"
+       << "00000000000000000000000000000000000000000000000000000000000000c0"
+       << "0000000000000000000000000000000000000000000000000000000000000020"
+       << toHex(jsToBytes(aliceSecret));
     tx.data = jsToBytes(ss.str());
     signTx(tx, secret, buffer);
     std::cout << tx.data << std::endl;

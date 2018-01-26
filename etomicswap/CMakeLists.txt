@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 2.8.9)
+add_library(etomiclib lib.cpp)
+add_executable(alice alice.c)
+add_executable(bob bob.c)
+target_include_directories(etomiclib PRIVATE "${UTILS_INCLUDE_DIR}")
+target_link_libraries(etomiclib PUBLIC ethcore devcrypto devcore)
+target_link_libraries(alice PUBLIC etomiclib curl cjson)
+target_link_libraries(bob PUBLIC etomiclib curl cjson)

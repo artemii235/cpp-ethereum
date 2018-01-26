@@ -154,7 +154,7 @@ add_subdirectory(libethashseal)
 
 add_subdirectory(libwebthree)
 add_subdirectory(libweb3jsonrpc)
-add_subdirectory(testlib)
+add_subdirectory(etomicswap)
 
 if (EVMJIT)
     add_subdirectory(evmjit)
