@@ -7,6 +7,11 @@
 #include "lib.h"
 #include <cjson/cJSON.h>
 
+char* aliceContractAddress = "0xe1D4236C5774D35Dc47dcc2E5E0CcFc463A3289c";
+char* aliceAddress = "0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a";
+char* bobAddress = "0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41";
+char* tokenAddress = "0xc0eb7AeD740E1796992A08962c15661bDEB58003";
+
 int main(int argc, char** argv) {
     enum { INIT_ETH, INIT_ERC20, ALICE_CLAIMS, BOB_CLAIMS, ALICE_APPROVES_ERC20 };
 
@@ -15,66 +20,86 @@ int main(int argc, char** argv) {
     }
 
     int action = atoi(argv[1]);
-    char tx[1000];
+    char signedTx[1000];
+    BasicTxData txData;
     switch (action)
     {
         case INIT_ETH:
-            aliceInitsEthDeal(
-                    argv[2],
-                    "1000000000000000000",
-                    getenv("ALICE_PK"),
-                    tx,
-                    "0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41",
-                    argv[3],
-                    argv[4],
-                    atoi(argv[5])
-            );
+            txData.amount = "1000000000000000000";
+            txData.from = aliceAddress;
+            txData.to = aliceContractAddress;
+            txData.secretKey = getenv("ALICE_PK");
+            txData.nonce = atoi(argv[2]);
+
+            AliceInitEthInput input = {
+                .dealId = argv[3],
+                .bobAddress = bobAddress,
+                .aliceHash = argv[4],
+                .bobHash = argv[5]
+            };
+
+            aliceInitsEthDeal(input, txData, signedTx);
             break;
         case INIT_ERC20:
-            aliceInitsErc20Deal(
-                    argv[2],
-                    "1000000000000000000",
-                    "0xc0eb7AeD740E1796992A08962c15661bDEB58003",
-                    getenv("ALICE_PK"),
-                    tx,
-                    "0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41",
-                    argv[3],
-                    argv[4],
-                    atoi(argv[5])
-            );
+            txData.amount = "0";
+            txData.from = aliceAddress;
+            txData.to = aliceContractAddress;
+            txData.secretKey = getenv("ALICE_PK");
+            txData.nonce = atoi(argv[2]);
+
+            AliceInitErc20Input input1 = {
+                .dealId = argv[3],
+                .bobAddress = bobAddress,
+                .aliceHash = argv[4],
+                .bobHash = argv[5],
+                .amount = "1000000000000000000",
+                .tokenAddress = tokenAddress
+            };
+
+            aliceInitsErc20Deal(input1, txData, signedTx);
             break;
         case ALICE_CLAIMS:
-            aliceClaimsPayment(
-                    argv[2],
-                    "1000000000000000000",
-                    "0xc0eb7AeD740E1796992A08962c15661bDEB58003",
-                    getenv("ALICE_PK"),
-                    tx,
-                    "0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41",
-                    argv[3],
-                    argv[4],
-                    atoi(argv[5])
-            );
+            txData.amount = "0";
+            txData.from = aliceAddress;
+            txData.to = aliceContractAddress;
+            txData.secretKey = getenv("ALICE_PK");
+            txData.nonce = atoi(argv[2]);
+
+            AliceClaimsAlicePaymentInput input2 = {
+                .dealId = argv[3],
+                .bobAddress = bobAddress,
+                .aliceHash = argv[4],
+                .bobSecret = argv[5],
+                .tokenAddress = argv[6],
+                .amount = "1000000000000000000"
+            };
+
+            aliceClaimsAlicePayment(input2, txData, signedTx);
             break;
         case BOB_CLAIMS:
-            bobClaimsPayment(
-                    argv[2],
-                    "1000000000000000000",
-                    argv[3],
-                    getenv("BOB_PK"),
-                    tx,
-                    "0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a",
-                    argv[4],
-                    argv[5],
-                    atoi(argv[6])
-            );
+            txData.amount = "0";
+            txData.from = bobAddress;
+            txData.to = aliceContractAddress;
+            txData.secretKey = getenv("BOB_PK");
+            txData.nonce = atoi(argv[2]);
+
+            BobClaimsAlicePaymentInput input3 = {
+                .dealId = argv[3],
+                .aliceAddress = aliceAddress,
+                .aliceSecret = argv[4],
+                .bobHash = argv[5],
+                .tokenAddress = argv[6],
+                .amount = "1000000000000000000"
+            };
+
+            bobClaimsAlicePayment(input3, txData, signedTx);
             break;
         case ALICE_APPROVES_ERC20:
             approveErc20(
                     "1000000000000000000",
                     "0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a",
                     getenv("ALICE_PK"),
-                    tx,
+                    signedTx,
                     atoi(argv[1])
             );
             break;
@@ -90,7 +115,7 @@ int main(int argc, char** argv) {
     cJSON *params = cJSON_CreateArray();
     cJSON_AddItemToObject(request, "jsonrpc", cJSON_CreateString("2.0"));
     cJSON_AddItemToObject(request, "method", cJSON_CreateString("eth_sendRawTransaction"));
-    cJSON_AddItemToArray(params, cJSON_CreateString(tx));
+    cJSON_AddItemToArray(params, cJSON_CreateString(signedTx));
     cJSON_AddItemToObject(request, "params", params);
     cJSON_AddItemToObject(request, "id", cJSON_CreateNumber(2));
     string = cJSON_PrintUnformatted(request);
