@@ -33,8 +33,7 @@ char* signTx(TransactionSkeleton& tx, char* secret)
     ss << rlpStream1.out();
     const std::string tmp = ss.str();
     char* result = (char*)malloc(strlen(tmp.c_str()) + 1);
-    strncpy(result, tmp.c_str(), strlen(tmp.c_str()));
-    result[strlen(tmp.c_str())] = '\0';
+    strcpy(result, tmp.c_str());
     return result;
 }
 
