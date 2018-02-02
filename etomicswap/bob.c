@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <curl/curl.h>
 #include <stdlib.h>
-#include "lib.h"
+#include "etomiclib.h"
 #include <cjson/cJSON.h>
 
 char* bobContractAddress = "0x9387Fd3a016bB0205e4e131Dde886B9d2BC000A2";
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     }
     int action = atoi(argv[1]);
     BasicTxData txData;
-    char signedTx[1000];
+    char* signedTx;
     switch (action)
     {
         case BOB_ETH_DEPOSIT:
@@ -40,13 +40,13 @@ int main(int argc, char** argv)
             txData.secretKey = getenv("BOB_PK");
             txData.nonce = atoi(argv[2]);
 
-            BobMakesEthDepositInput input = {
+            BobSendsEthDepositInput input = {
                 .aliceAddress = aliceAddress,
                 .depositId = argv[3],
                 .bobHash = argv[4]
             };
 
-            bobMakesEthDeposit(input, txData, signedTx);
+            signedTx = bobSendsEthDeposit(input, txData);
             break;
         case BOB_ERC20_DEPOSIT:
             txData.amount = "0";
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
             txData.secretKey = getenv("BOB_PK");
             txData.nonce = atoi(argv[2]);
 
-            BobMakesErc20DepositInput input1 = {
+            BobSendsErc20DepositInput input1 = {
                 .depositId = argv[3],
                 .amount = "1000000000000000000",
                 .aliceAddress = aliceAddress,
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
                 .tokenAddress = tokenAddress
             };
 
-            bobMakesErc20Deposit(input1, txData, signedTx);
+            signedTx = bobSendsErc20Deposit(input1, txData);
             break;
         case BOB_CLAIMS_DEPOSIT:
             txData.amount = "0";
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
             txData.secretKey = getenv("BOB_PK");
             txData.nonce = atoi(argv[2]);
 
-            BobClaimsDepositInput input2 = {
+            BobRefundsDepositInput input2 = {
                 .depositId = argv[3],
                 .amount = "1000000000000000000",
                 .aliceAddress = aliceAddress,
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
                 .bobSecret = argv[6]
             };
 
-            bobClaimsDeposit(input2, txData, signedTx);
+            signedTx = bobRefundsDeposit(input2, txData);
             break;
         case ALICE_CLAIMS_DEPOSIT:
             txData.amount = "0";
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
                 .bobHash = argv[6]
             };
 
-            aliceClaimsBobDeposit(input3, txData, signedTx);
+            signedTx = aliceClaimsBobDeposit(input3, txData);
             break;
         case BOB_ETH_PAYMENT:
             txData.amount = "1000000000000000000";
@@ -108,13 +108,13 @@ int main(int argc, char** argv)
             txData.secretKey = getenv("BOB_PK");
             txData.nonce = atoi(argv[2]);
 
-            BobMakesEthPaymentInput input4 = {
+            BobSendsEthPaymentInput input4 = {
                 .paymentId = argv[3],
                 .aliceHash = argv[4],
                 .aliceAddress = aliceAddress
             };
 
-            bobMakesEthPayment(input4, txData, signedTx);
+            signedTx = bobSendsEthPayment(input4, txData);
             break;
         case BOB_ERC20_PAYMENT:
             txData.amount = "0";
@@ -123,7 +123,7 @@ int main(int argc, char** argv)
             txData.secretKey = getenv("BOB_PK");
             txData.nonce = atoi(argv[2]);
 
-            BobMakesErc20PaymentInput input5 = {
+            BobSendsErc20PaymentInput input5 = {
                 .paymentId = argv[3],
                 .amount = "1000000000000000000",
                 .tokenAddress = tokenAddress,
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
                 .aliceHash = argv[4]
             };
 
-            bobMakesErc20Payment(input5, txData, signedTx);
+            signedTx = bobSendsErc20Payment(input5, txData);
             break;
         case BOB_CLAIMS_PAYMENT:
             txData.amount = "0";
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
             txData.secretKey = getenv("BOB_PK");
             txData.nonce = atoi(argv[2]);
 
-            BobClaimsBobPaymentInput input6 = {
+            BobReclaimsBobPaymentInput input6 = {
                 .paymentId = argv[3],
                 .aliceAddress = aliceAddress,
                 .amount = "1000000000000000000",
@@ -149,7 +149,7 @@ int main(int argc, char** argv)
                 .aliceHash = argv[6]
             };
 
-            bobClaimsBobPayment(input6, txData, signedTx);
+            signedTx = bobReclaimsBobPayment(input6, txData);
             break;
         case ALICE_CLAIMS_PAYMENT:
             txData.amount = "0";
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
             txData.secretKey = getenv("ALICE_PK");
             txData.nonce = atoi(argv[2]);
 
-            AliceClaimsBobPaymentInput input7 = {
+            AliceSpendsBobPaymentInput input7 = {
                 .paymentId = argv[3],
                 .bobAddress = bobAddress,
                 .amount = "1000000000000000000",
@@ -167,14 +167,13 @@ int main(int argc, char** argv)
                 .aliceSecret = argv[6]
             };
 
-            aliceClaimsBobPayment(input7, txData, signedTx);
+            signedTx = aliceSpendsBobPayment(input7, txData);
             break;
         case BOB_APPROVES_ERC20:
-            approveErc20(
+            signedTx = approveErc20(
                     "10000000000000000000",
                     "0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41",
                     getenv("BOB_PK"),
-                    signedTx,
                     atoi(argv[2])
             );
             break;
@@ -213,6 +212,7 @@ int main(int argc, char** argv)
         /* always cleanup */
         curl_easy_cleanup(curl);
     }
+    free(signedTx);
     cJSON_Delete(request);
     return 0;
 }

@@ -17,7 +17,7 @@ typedef struct {
     char* bobAddress;
     char* aliceHash;
     char* bobHash;
-} AliceInitEthInput;
+} AliceSendsEthPaymentInput;
 
 typedef struct {
     char* dealId;
@@ -26,7 +26,7 @@ typedef struct {
     char* bobAddress;
     char* aliceHash;
     char* bobHash;
-} AliceInitErc20Input;
+} AliceSendsErc20PaymentInput;
 
 typedef struct {
     char* dealId;
@@ -35,7 +35,7 @@ typedef struct {
     char* bobAddress;
     char* aliceHash;
     char* bobSecret;
-} AliceClaimsAlicePaymentInput;
+} AliceReclaimsAlicePaymentInput;
 
 typedef struct {
     char* dealId;
@@ -44,13 +44,13 @@ typedef struct {
     char* aliceAddress;
     char* aliceSecret;
     char* bobHash;
-} BobClaimsAlicePaymentInput;
+} BobSpendsAlicePaymentInput;
 
 typedef struct {
     char* depositId;
     char* aliceAddress;
     char* bobHash;
-} BobMakesEthDepositInput;
+} BobSendsEthDepositInput;
 
 typedef struct {
     char* depositId;
@@ -58,7 +58,7 @@ typedef struct {
     char* tokenAddress;
     char* aliceAddress;
     char* bobHash;
-} BobMakesErc20DepositInput;
+} BobSendsErc20DepositInput;
 
 typedef struct {
     char* depositId;
@@ -67,7 +67,7 @@ typedef struct {
     char* aliceAddress;
     char* bobSecret;
     char* aliceCanClaimAfter;
-} BobClaimsDepositInput;
+} BobRefundsDepositInput;
 
 typedef struct {
     char* depositId;
@@ -82,7 +82,7 @@ typedef struct {
     char* paymentId;
     char* aliceAddress;
     char* aliceHash;
-} BobMakesEthPaymentInput;
+} BobSendsEthPaymentInput;
 
 typedef struct {
     char* paymentId;
@@ -90,7 +90,7 @@ typedef struct {
     char* tokenAddress;
     char* aliceAddress;
     char* aliceHash;
-} BobMakesErc20PaymentInput;
+} BobSendsErc20PaymentInput;
 
 typedef struct {
     char* paymentId;
@@ -99,7 +99,7 @@ typedef struct {
     char* aliceAddress;
     char* aliceHash;
     char* bobCanClaimAfter;
-} BobClaimsBobPaymentInput;
+} BobReclaimsBobPaymentInput;
 
 typedef struct {
     char* paymentId;
@@ -108,21 +108,21 @@ typedef struct {
     char* aliceSecret;
     char* bobAddress;
     char* bobCanClaimAfter;
-} AliceClaimsBobPaymentInput;
+} AliceSpendsBobPaymentInput;
 
-void approveErc20(char* amount, char* from, char* secret, char* buffer, int nonce);
-void aliceInitsEthDeal(AliceInitEthInput input, BasicTxData txData, char* result);
-void aliceInitsErc20Deal(AliceInitErc20Input input, BasicTxData txData, char* result);
-void aliceClaimsAlicePayment(AliceClaimsAlicePaymentInput input, BasicTxData txData, char* result);
-void bobClaimsAlicePayment(BobClaimsAlicePaymentInput input, BasicTxData txData, char* result);
-void bobMakesEthDeposit(BobMakesEthDepositInput input, BasicTxData txData, char* result);
-void bobMakesErc20Deposit(BobMakesErc20DepositInput input, BasicTxData txData, char* result);
-void bobClaimsDeposit(BobClaimsDepositInput input, BasicTxData txData, char* result);
-void aliceClaimsBobDeposit(AliceClaimsBobDepositInput input, BasicTxData txData, char* result);
-void bobMakesEthPayment(BobMakesEthPaymentInput input, BasicTxData txData, char* result);
-void bobMakesErc20Payment(BobMakesErc20PaymentInput input, BasicTxData txData, char* result);
-void bobClaimsBobPayment(BobClaimsBobPaymentInput input, BasicTxData txData, char* result);
-void aliceClaimsBobPayment(AliceClaimsBobPaymentInput input, BasicTxData txData, char* result);
+char* approveErc20(char* amount, char* from, char* secret, int nonce);
+char* aliceSendsEthPayment(AliceSendsEthPaymentInput input, BasicTxData txData);
+char* aliceSendsErc20Payment(AliceSendsErc20PaymentInput input, BasicTxData txData);
+char* aliceReclaimsAlicePayment(AliceReclaimsAlicePaymentInput input, BasicTxData txData);
+char* bobSpendsAlicePayment(BobSpendsAlicePaymentInput input, BasicTxData txData);
+char* bobSendsEthDeposit(BobSendsEthDepositInput input, BasicTxData txData);
+char* bobSendsErc20Deposit(BobSendsErc20DepositInput input, BasicTxData txData);
+char* bobRefundsDeposit(BobRefundsDepositInput input, BasicTxData txData);
+char* aliceClaimsBobDeposit(AliceClaimsBobDepositInput input, BasicTxData txData);
+char* bobSendsEthPayment(BobSendsEthPaymentInput input, BasicTxData txData);
+char* bobSendsErc20Payment(BobSendsErc20PaymentInput input, BasicTxData txData);
+char* bobReclaimsBobPayment(BobReclaimsBobPaymentInput input, BasicTxData txData);
+char* aliceSpendsBobPayment(AliceSpendsBobPaymentInput input, BasicTxData txData);
 // Your prototype or Definition
 #ifdef __cplusplus
 }

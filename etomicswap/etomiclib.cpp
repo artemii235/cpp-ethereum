@@ -1,7 +1,7 @@
 //
 // Created by artem on 24.01.18.
 //
-#include "lib.h"
+#include "etomiclib.h"
 #include <iostream>
 #include <libethcore/Common.h>
 #include <libethcore/CommonJS.h>
@@ -21,7 +21,7 @@ TransactionSkeleton txDataToSkeleton(BasicTxData txData)
     return tx;
 }
 
-void signTx(TransactionSkeleton& tx, char* secret, char* buffer)
+char* signTx(TransactionSkeleton& tx, char* secret)
 {
     Secret* secret1 = new Secret(secret);
     Secret& secretRef = *secret1;
@@ -32,12 +32,12 @@ void signTx(TransactionSkeleton& tx, char* secret, char* buffer)
     std::stringstream ss;
     ss << rlpStream1.out();
     const std::string tmp = ss.str();
-    if (strlen(tmp.c_str()) < 1000) {
-        strncpy(buffer, tmp.c_str(), 1000);
-    }
+    char* result = (char*)malloc(strlen(tmp.c_str()));
+    strncpy(result, tmp.c_str(), strlen(tmp.c_str()));
+    return result;
 }
 
-void approveErc20(char* amount, char* from, char* secret, char* buffer, int nonce)
+char* approveErc20(char* amount, char* from, char* secret, int nonce)
 {
     TransactionSkeleton tx;
     tx.from = jsToAddress(from);
@@ -52,11 +52,10 @@ void approveErc20(char* amount, char* from, char* secret, char* buffer, int nonc
        << toHex(jsToAddress("0xe1D4236C5774D35Dc47dcc2E5E0CcFc463A3289c"))
        << toHex(toBigEndian(jsToU256(amount)));
     tx.data = jsToBytes(ss.str());
-    signTx(tx, secret, buffer);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, secret);
 }
 
-void aliceInitsEthDeal(AliceInitEthInput input, BasicTxData txData, char* result)
+char* aliceSendsEthPayment(AliceSendsEthPaymentInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -69,11 +68,10 @@ void aliceInitsEthDeal(AliceInitEthInput input, BasicTxData txData, char* result
        << toHex(jsToBytes(input.bobHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void aliceInitsErc20Deal(AliceInitErc20Input input, BasicTxData txData, char* result)
+char* aliceSendsErc20Payment(AliceSendsErc20PaymentInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -89,11 +87,10 @@ void aliceInitsErc20Deal(AliceInitErc20Input input, BasicTxData txData, char* re
        << "000000000000000000000000"
        << toHex(jsToAddress(input.tokenAddress));
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void aliceClaimsAlicePayment(AliceClaimsAlicePaymentInput input, BasicTxData txData, char* result)
+char* aliceReclaimsAlicePayment(AliceReclaimsAlicePaymentInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -110,11 +107,10 @@ void aliceClaimsAlicePayment(AliceClaimsAlicePaymentInput input, BasicTxData txD
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(input.bobSecret));
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void bobClaimsAlicePayment(BobClaimsAlicePaymentInput input, BasicTxData txData, char* result)
+char* bobSpendsAlicePayment(BobSpendsAlicePaymentInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -131,11 +127,10 @@ void bobClaimsAlicePayment(BobClaimsAlicePaymentInput input, BasicTxData txData,
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(input.aliceSecret));
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void bobMakesEthDeposit(BobMakesEthDepositInput input, BasicTxData txData, char* result)
+char* bobSendsEthDeposit(BobSendsEthDepositInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -146,11 +141,10 @@ void bobMakesEthDeposit(BobMakesEthDepositInput input, BasicTxData txData, char*
        << toHex(jsToBytes(input.bobHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void bobMakesErc20Deposit(BobMakesErc20DepositInput input, BasicTxData txData, char* result)
+char* bobSendsErc20Deposit(BobSendsErc20DepositInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -164,11 +158,10 @@ void bobMakesErc20Deposit(BobMakesErc20DepositInput input, BasicTxData txData, c
        << "000000000000000000000000"
        << toHex(jsToAddress(input.tokenAddress));
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void bobClaimsDeposit(BobClaimsDepositInput input, BasicTxData txData, char* result)
+char* bobRefundsDeposit(BobRefundsDepositInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -184,11 +177,10 @@ void bobClaimsDeposit(BobClaimsDepositInput input, BasicTxData txData, char* res
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(input.bobSecret));
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void aliceClaimsBobDeposit(AliceClaimsBobDepositInput input, BasicTxData txData, char* result)
+char* aliceClaimsBobDeposit(AliceClaimsBobDepositInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -203,11 +195,10 @@ void aliceClaimsBobDeposit(AliceClaimsBobDepositInput input, BasicTxData txData,
        << toHex(jsToBytes(input.bobHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void bobMakesEthPayment(BobMakesEthPaymentInput input, BasicTxData txData, char* result)
+char* bobSendsEthPayment(BobSendsEthPaymentInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -218,11 +209,10 @@ void bobMakesEthPayment(BobMakesEthPaymentInput input, BasicTxData txData, char*
        << toHex(jsToBytes(input.aliceHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void bobMakesErc20Payment(BobMakesErc20PaymentInput input, BasicTxData txData, char* result)
+char* bobSendsErc20Payment(BobSendsErc20PaymentInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -236,11 +226,10 @@ void bobMakesErc20Payment(BobMakesErc20PaymentInput input, BasicTxData txData, c
        << "000000000000000000000000"
        << toHex(jsToAddress(input.tokenAddress));
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void bobClaimsBobPayment(BobClaimsBobPaymentInput input, BasicTxData txData, char* result)
+char* bobReclaimsBobPayment(BobReclaimsBobPaymentInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -255,11 +244,10 @@ void bobClaimsBobPayment(BobClaimsBobPaymentInput input, BasicTxData txData, cha
        << toHex(jsToBytes(input.aliceHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }
 
-void aliceClaimsBobPayment(AliceClaimsBobPaymentInput input, BasicTxData txData, char* result)
+char* aliceSpendsBobPayment(AliceSpendsBobPaymentInput input, BasicTxData txData)
 {
     TransactionSkeleton tx = txDataToSkeleton(txData);
     std::stringstream ss;
@@ -275,6 +263,5 @@ void aliceClaimsBobPayment(AliceClaimsBobPaymentInput input, BasicTxData txData,
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(input.aliceSecret));
     tx.data = jsToBytes(ss.str());
-    signTx(tx, txData.secretKey, result);
-    std::cout << tx.data << std::endl;
+    return signTx(tx, txData.secretKey);
 }

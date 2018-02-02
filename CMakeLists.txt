@@ -88,7 +88,7 @@ endif()
 # project name and version should be set after cmake_policy CMP0048
 project(cpp-ethereum VERSION "1.3.0")
 
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/evmjit/.git)
+if (NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/evmjit/.git)
     message(FATAL_ERROR "Git submodules not initialized, execute:\n  git submodule update --init")
 endif()
 
@@ -130,7 +130,7 @@ if(MINIUPNPC)
     find_package(Miniupnpc 1.8.2013 REQUIRED)
 endif()
 
-set(UTILS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/utils")
+set(UTILS_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/utils")
 
 configure_project()
 
@@ -139,7 +139,7 @@ if (HERA)
 endif()
 
 #Global include path for all libs.
-include_directories("${CMAKE_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_LIST_DIR}")
 
 add_subdirectory(libdevcore)
 add_subdirectory(libdevcrypto)

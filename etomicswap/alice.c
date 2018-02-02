@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <curl/curl.h>
 #include <stdlib.h>
-#include "lib.h"
+#include "etomiclib.h"
 #include <cjson/cJSON.h>
 
 char* aliceContractAddress = "0xe1D4236C5774D35Dc47dcc2E5E0CcFc463A3289c";
@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     }
 
     int action = atoi(argv[1]);
-    char signedTx[1000];
+    char* signedTx;
     BasicTxData txData;
     switch (action)
     {
@@ -31,14 +31,14 @@ int main(int argc, char** argv) {
             txData.secretKey = getenv("ALICE_PK");
             txData.nonce = atoi(argv[2]);
 
-            AliceInitEthInput input = {
+            AliceSendsEthPaymentInput input = {
                 .dealId = argv[3],
                 .bobAddress = bobAddress,
                 .aliceHash = argv[4],
                 .bobHash = argv[5]
             };
 
-            aliceInitsEthDeal(input, txData, signedTx);
+            signedTx = aliceSendsEthPayment(input, txData);
             break;
         case INIT_ERC20:
             txData.amount = "0";
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
             txData.secretKey = getenv("ALICE_PK");
             txData.nonce = atoi(argv[2]);
 
-            AliceInitErc20Input input1 = {
+            AliceSendsErc20PaymentInput input1 = {
                 .dealId = argv[3],
                 .bobAddress = bobAddress,
                 .aliceHash = argv[4],
@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
                 .tokenAddress = tokenAddress
             };
 
-            aliceInitsErc20Deal(input1, txData, signedTx);
+            signedTx = aliceSendsErc20Payment(input1, txData);
             break;
         case ALICE_CLAIMS:
             txData.amount = "0";
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
             txData.secretKey = getenv("ALICE_PK");
             txData.nonce = atoi(argv[2]);
 
-            AliceClaimsAlicePaymentInput input2 = {
+            AliceReclaimsAlicePaymentInput input2 = {
                 .dealId = argv[3],
                 .bobAddress = bobAddress,
                 .aliceHash = argv[4],
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
                 .amount = "1000000000000000000"
             };
 
-            aliceClaimsAlicePayment(input2, txData, signedTx);
+            signedTx = aliceReclaimsAlicePayment(input2, txData);
             break;
         case BOB_CLAIMS:
             txData.amount = "0";
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
             txData.secretKey = getenv("BOB_PK");
             txData.nonce = atoi(argv[2]);
 
-            BobClaimsAlicePaymentInput input3 = {
+            BobSpendsAlicePaymentInput input3 = {
                 .dealId = argv[3],
                 .aliceAddress = aliceAddress,
                 .aliceSecret = argv[4],
@@ -92,14 +92,13 @@ int main(int argc, char** argv) {
                 .amount = "1000000000000000000"
             };
 
-            bobClaimsAlicePayment(input3, txData, signedTx);
+            signedTx = bobSpendsAlicePayment(input3, txData);
             break;
         case ALICE_APPROVES_ERC20:
-            approveErc20(
+            signedTx = approveErc20(
                     "1000000000000000000",
                     "0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a",
                     getenv("ALICE_PK"),
-                    signedTx,
                     atoi(argv[1])
             );
             break;
@@ -138,6 +137,7 @@ int main(int argc, char** argv) {
         /* always cleanup */
         curl_easy_cleanup(curl);
     }
+    free(signedTx);
     cJSON_Delete(request);
     return 0;
 }
