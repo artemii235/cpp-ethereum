@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     }
     int action = atoi(argv[1]);
     BasicTxData txData;
-    char* signedTx;
+    char* result;
     switch (action)
     {
         case BOB_ETH_DEPOSIT:
@@ -38,181 +38,140 @@ int main(int argc, char** argv)
             txData.from = bobAddress;
             txData.to = bobContractAddress;
             txData.secretKey = getenv("BOB_PK");
-            txData.nonce = atoi(argv[2]);
 
             BobSendsEthDepositInput input = {
                 .aliceAddress = aliceAddress,
-                .depositId = argv[3],
-                .bobHash = argv[4]
+                .depositId = argv[2],
+                .bobHash = argv[3]
             };
 
-            signedTx = bobSendsEthDeposit(input, txData);
+            result = bobSendsEthDeposit(input, txData);
             break;
         case BOB_ERC20_DEPOSIT:
             txData.amount = "0";
             txData.from = bobAddress;
             txData.to = bobContractAddress;
             txData.secretKey = getenv("BOB_PK");
-            txData.nonce = atoi(argv[2]);
 
             BobSendsErc20DepositInput input1 = {
-                .depositId = argv[3],
+                .depositId = argv[2],
                 .amount = "1000000000000000000",
                 .aliceAddress = aliceAddress,
-                .bobHash = argv[4],
+                .bobHash = argv[3],
                 .tokenAddress = tokenAddress
             };
 
-            signedTx = bobSendsErc20Deposit(input1, txData);
+            result = bobSendsErc20Deposit(input1, txData);
             break;
         case BOB_CLAIMS_DEPOSIT:
             txData.amount = "0";
             txData.from = bobAddress;
             txData.to = bobContractAddress;
             txData.secretKey = getenv("BOB_PK");
-            txData.nonce = atoi(argv[2]);
 
             BobRefundsDepositInput input2 = {
-                .depositId = argv[3],
+                .depositId = argv[2],
                 .amount = "1000000000000000000",
                 .aliceAddress = aliceAddress,
-                .tokenAddress = argv[4],
-                .aliceCanClaimAfter = argv[5],
-                .bobSecret = argv[6]
+                .tokenAddress = argv[3],
+                .aliceCanClaimAfter = argv[4],
+                .bobSecret = argv[5]
             };
 
-            signedTx = bobRefundsDeposit(input2, txData);
+            result = bobRefundsDeposit(input2, txData);
             break;
         case ALICE_CLAIMS_DEPOSIT:
             txData.amount = "0";
             txData.from = aliceAddress;
             txData.to = bobContractAddress;
             txData.secretKey = getenv("ALICE_PK");
-            txData.nonce = atoi(argv[2]);
 
             AliceClaimsBobDepositInput input3 = {
-                .depositId = argv[3],
+                .depositId = argv[2],
                 .amount = "1000000000000000000",
                 .bobAddress = bobAddress,
-                .tokenAddress = argv[4],
-                .aliceCanClaimAfter = argv[5],
-                .bobHash = argv[6]
+                .tokenAddress = argv[3],
+                .aliceCanClaimAfter = argv[4],
+                .bobHash = argv[5]
             };
 
-            signedTx = aliceClaimsBobDeposit(input3, txData);
+            result = aliceClaimsBobDeposit(input3, txData);
             break;
         case BOB_ETH_PAYMENT:
             txData.amount = "1000000000000000000";
             txData.from = bobAddress;
             txData.to = bobContractAddress;
             txData.secretKey = getenv("BOB_PK");
-            txData.nonce = atoi(argv[2]);
 
             BobSendsEthPaymentInput input4 = {
-                .paymentId = argv[3],
-                .aliceHash = argv[4],
+                .paymentId = argv[2],
+                .aliceHash = argv[3],
                 .aliceAddress = aliceAddress
             };
 
-            signedTx = bobSendsEthPayment(input4, txData);
+            result = bobSendsEthPayment(input4, txData);
             break;
         case BOB_ERC20_PAYMENT:
             txData.amount = "0";
             txData.from = bobAddress;
             txData.to = bobContractAddress;
             txData.secretKey = getenv("BOB_PK");
-            txData.nonce = atoi(argv[2]);
 
             BobSendsErc20PaymentInput input5 = {
-                .paymentId = argv[3],
+                .paymentId = argv[2],
                 .amount = "1000000000000000000",
                 .tokenAddress = tokenAddress,
                 .aliceAddress = aliceAddress,
-                .aliceHash = argv[4]
+                .aliceHash = argv[3]
             };
 
-            signedTx = bobSendsErc20Payment(input5, txData);
+            result = bobSendsErc20Payment(input5, txData);
             break;
         case BOB_CLAIMS_PAYMENT:
             txData.amount = "0";
             txData.from = bobAddress;
             txData.to = bobContractAddress;
             txData.secretKey = getenv("BOB_PK");
-            txData.nonce = atoi(argv[2]);
 
             BobReclaimsBobPaymentInput input6 = {
-                .paymentId = argv[3],
+                .paymentId = argv[2],
                 .aliceAddress = aliceAddress,
                 .amount = "1000000000000000000",
-                .tokenAddress = argv[4],
-                .bobCanClaimAfter = argv[5],
-                .aliceHash = argv[6]
+                .tokenAddress = argv[3],
+                .bobCanClaimAfter = argv[4],
+                .aliceHash = argv[5]
             };
 
-            signedTx = bobReclaimsBobPayment(input6, txData);
+            result = bobReclaimsBobPayment(input6, txData);
             break;
         case ALICE_CLAIMS_PAYMENT:
             txData.amount = "0";
             txData.from = aliceAddress;
             txData.to = bobContractAddress;
             txData.secretKey = getenv("ALICE_PK");
-            txData.nonce = atoi(argv[2]);
 
             AliceSpendsBobPaymentInput input7 = {
-                .paymentId = argv[3],
+                .paymentId = argv[2],
                 .bobAddress = bobAddress,
                 .amount = "1000000000000000000",
-                .tokenAddress = argv[4],
-                .bobCanClaimAfter = argv[5],
-                .aliceSecret = argv[6]
+                .tokenAddress = argv[3],
+                .bobCanClaimAfter = argv[4],
+                .aliceSecret = argv[5]
             };
 
-            signedTx = aliceSpendsBobPayment(input7, txData);
+            result = aliceSpendsBobPayment(input7, txData);
             break;
         case BOB_APPROVES_ERC20:
-            signedTx = approveErc20(
+            result = approveErc20(
                     "10000000000000000000",
                     "0xA7EF3f65714AE266414C9E58bB4bAa4E6FB82B41",
-                    getenv("BOB_PK"),
-                    atoi(argv[2])
+                    getenv("BOB_PK")
             );
             break;
         default:
             return 1;
     }
-    CURL *curl;
-    CURLcode res;
-    struct curl_slist *headers = NULL;
-
-    char* string;
-    cJSON *request = cJSON_CreateObject();
-    cJSON *params = cJSON_CreateArray();
-    cJSON_AddItemToObject(request, "jsonrpc", cJSON_CreateString("2.0"));
-    cJSON_AddItemToObject(request, "method", cJSON_CreateString("eth_sendRawTransaction"));
-    cJSON_AddItemToArray(params, cJSON_CreateString(signedTx));
-    cJSON_AddItemToObject(request, "params", params);
-    cJSON_AddItemToObject(request, "id", cJSON_CreateNumber(2));
-    string = cJSON_PrintUnformatted(request);
-    fprintf(stdout, "%s\n", string);
-    curl = curl_easy_init();
-    if (curl) {
-        headers = curl_slist_append(headers, "Accept: application/json");
-        headers = curl_slist_append(headers, "Content-Type: application/json");
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_easy_setopt(curl, CURLOPT_URL, "https://ropsten.infura.io/y07GHxUyTgeN2mdfOonu");
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, string);
-        /* Perform the request, res will get the return code */
-        res = curl_easy_perform(curl);
-        /* Check for errors */
-        if(res != CURLE_OK) {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        }
-
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-    }
-    free(signedTx);
-    cJSON_Delete(request);
+    printf("%s\n", result);
+    free(result);
     return 0;
 }

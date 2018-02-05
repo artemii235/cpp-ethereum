@@ -8,7 +8,6 @@ typedef struct {
     char* from;
     char* to;
     char* amount;
-    int nonce;
     char* secretKey;
 } BasicTxData;
 
@@ -110,7 +109,7 @@ typedef struct {
     char* bobCanClaimAfter;
 } AliceSpendsBobPaymentInput;
 
-char* approveErc20(char* amount, char* from, char* secret, int nonce);
+char* approveErc20(char* amount, char* from, char* secret);
 char* aliceSendsEthPayment(AliceSendsEthPaymentInput input, BasicTxData txData);
 char* aliceSendsErc20Payment(AliceSendsErc20PaymentInput input, BasicTxData txData);
 char* aliceReclaimsAlicePayment(AliceReclaimsAlicePaymentInput input, BasicTxData txData);
@@ -123,6 +122,9 @@ char* bobSendsEthPayment(BobSendsEthPaymentInput input, BasicTxData txData);
 char* bobSendsErc20Payment(BobSendsErc20PaymentInput input, BasicTxData txData);
 char* bobReclaimsBobPayment(BobReclaimsBobPaymentInput input, BasicTxData txData);
 char* aliceSpendsBobPayment(AliceSpendsBobPaymentInput input, BasicTxData txData);
+char* privKey2Addr(char* privKey);
+char* pubKey2Addr(char* pubKey);
+char* getPubKeyFromPriv(char* privKey);
 // Your prototype or Definition
 #ifdef __cplusplus
 }

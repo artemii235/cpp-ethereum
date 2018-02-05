@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     }
 
     int action = atoi(argv[1]);
-    char* signedTx;
+    char* result;
     BasicTxData txData;
     switch (action)
     {
@@ -29,115 +29,78 @@ int main(int argc, char** argv) {
             txData.from = aliceAddress;
             txData.to = aliceContractAddress;
             txData.secretKey = getenv("ALICE_PK");
-            txData.nonce = atoi(argv[2]);
 
             AliceSendsEthPaymentInput input = {
-                .dealId = argv[3],
+                .dealId = argv[2],
                 .bobAddress = bobAddress,
-                .aliceHash = argv[4],
-                .bobHash = argv[5]
+                .aliceHash = argv[3],
+                .bobHash = argv[4]
             };
 
-            signedTx = aliceSendsEthPayment(input, txData);
+            result = aliceSendsEthPayment(input, txData);
             break;
         case INIT_ERC20:
             txData.amount = "0";
             txData.from = aliceAddress;
             txData.to = aliceContractAddress;
             txData.secretKey = getenv("ALICE_PK");
-            txData.nonce = atoi(argv[2]);
 
             AliceSendsErc20PaymentInput input1 = {
-                .dealId = argv[3],
+                .dealId = argv[2],
                 .bobAddress = bobAddress,
-                .aliceHash = argv[4],
-                .bobHash = argv[5],
+                .aliceHash = argv[3],
+                .bobHash = argv[4],
                 .amount = "1000000000000000000",
                 .tokenAddress = tokenAddress
             };
 
-            signedTx = aliceSendsErc20Payment(input1, txData);
+            result = aliceSendsErc20Payment(input1, txData);
             break;
         case ALICE_CLAIMS:
             txData.amount = "0";
             txData.from = aliceAddress;
             txData.to = aliceContractAddress;
             txData.secretKey = getenv("ALICE_PK");
-            txData.nonce = atoi(argv[2]);
 
             AliceReclaimsAlicePaymentInput input2 = {
-                .dealId = argv[3],
+                .dealId = argv[2],
                 .bobAddress = bobAddress,
-                .aliceHash = argv[4],
-                .bobSecret = argv[5],
-                .tokenAddress = argv[6],
+                .aliceHash = argv[3],
+                .bobSecret = argv[4],
+                .tokenAddress = argv[5],
                 .amount = "1000000000000000000"
             };
 
-            signedTx = aliceReclaimsAlicePayment(input2, txData);
+            result = aliceReclaimsAlicePayment(input2, txData);
             break;
         case BOB_CLAIMS:
             txData.amount = "0";
             txData.from = bobAddress;
             txData.to = aliceContractAddress;
             txData.secretKey = getenv("BOB_PK");
-            txData.nonce = atoi(argv[2]);
 
             BobSpendsAlicePaymentInput input3 = {
-                .dealId = argv[3],
+                .dealId = argv[2],
                 .aliceAddress = aliceAddress,
-                .aliceSecret = argv[4],
-                .bobHash = argv[5],
-                .tokenAddress = argv[6],
+                .aliceSecret = argv[3],
+                .bobHash = argv[4],
+                .tokenAddress = argv[5],
                 .amount = "1000000000000000000"
             };
 
-            signedTx = bobSpendsAlicePayment(input3, txData);
+            result = bobSpendsAlicePayment(input3, txData);
             break;
         case ALICE_APPROVES_ERC20:
-            signedTx = approveErc20(
+            result = approveErc20(
                     "1000000000000000000",
                     "0x485d2cc2d13a9e12E4b53D606DB1c8adc884fB8a",
-                    getenv("ALICE_PK"),
-                    atoi(argv[1])
+                    getenv("ALICE_PK")
             );
             break;
         default:
             return 1;
     }
-    CURL *curl;
-    CURLcode res;
-    struct curl_slist *headers = NULL;
-
-    char* string;
-    cJSON *request = cJSON_CreateObject();
-    cJSON *params = cJSON_CreateArray();
-    cJSON_AddItemToObject(request, "jsonrpc", cJSON_CreateString("2.0"));
-    cJSON_AddItemToObject(request, "method", cJSON_CreateString("eth_sendRawTransaction"));
-    cJSON_AddItemToArray(params, cJSON_CreateString(signedTx));
-    cJSON_AddItemToObject(request, "params", params);
-    cJSON_AddItemToObject(request, "id", cJSON_CreateNumber(2));
-    string = cJSON_PrintUnformatted(request);
-    fprintf(stdout, "%s\n", string);
-    curl = curl_easy_init();
-    if (curl) {
-        headers = curl_slist_append(headers, "Accept: application/json");
-        headers = curl_slist_append(headers, "Content-Type: application/json");
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_easy_setopt(curl, CURLOPT_URL, "https://ropsten.infura.io/y07GHxUyTgeN2mdfOonu");
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, string);
-        /* Perform the request, res will get the return code */
-        res = curl_easy_perform(curl);
-        /* Check for errors */
-        if(res != CURLE_OK) {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-        }
-
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-    }
-    free(signedTx);
-    cJSON_Delete(request);
+    printf("%s\n", result);
+    free(result);
     return 0;
 }

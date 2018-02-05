@@ -2,12 +2,21 @@
 // Created by artem on 24.01.18.
 //
 #include "etomiclib.h"
+#include "etomiccurl.h"
 #include <iostream>
 #include <libethcore/Common.h>
 #include <libethcore/CommonJS.h>
 #include <libethcore/TransactionBase.h>
 using namespace dev;
 using namespace dev::eth;
+
+char* stringStreamToChar(std::stringstream& ss)
+{
+    const std::string tmp = ss.str();
+    auto result = (char*)malloc(strlen(tmp.c_str()) + 1);
+    strcpy(result, tmp.c_str());
+    return result;
+}
 
 TransactionSkeleton txDataToSkeleton(BasicTxData txData)
 {
@@ -17,27 +26,22 @@ TransactionSkeleton txDataToSkeleton(BasicTxData txData)
     tx.value = jsToU256(txData.amount);
     tx.gas = 300000;
     tx.gasPrice = 100 * exp10<9>();
-    tx.nonce = txData.nonce;
+    tx.nonce = getNonce(txData.from);
     return tx;
 }
 
 char* signTx(TransactionSkeleton& tx, char* secret)
 {
-    Secret* secret1 = new Secret(secret);
-    Secret& secretRef = *secret1;
-    auto baseTx = new TransactionBase(tx, secretRef);
-    auto rlpStream = new RLPStream();
-    RLPStream& rlpStream1 = *rlpStream;
-    baseTx->streamRLP(rlpStream1);
-    std::stringstream ss;
-    ss << rlpStream1.out();
-    const std::string tmp = ss.str();
-    char* result = (char*)malloc(strlen(tmp.c_str()) + 1);
-    strcpy(result, tmp.c_str());
-    return result;
+    Secret& secretKey = *(new Secret(secret));
+    auto baseTx = new TransactionBase(tx, secretKey);
+    RLPStream& rlpStream = *(new RLPStream());
+    baseTx->streamRLP(rlpStream);
+    std::stringstream& ss = *(new std::stringstream);
+    ss << rlpStream.out();
+    return stringStreamToChar(ss);
 }
 
-char* approveErc20(char* amount, char* from, char* secret, int nonce)
+char* approveErc20(char* amount, char* from, char* secret)
 {
     TransactionSkeleton tx;
     tx.from = jsToAddress(from);
@@ -45,14 +49,17 @@ char* approveErc20(char* amount, char* from, char* secret, int nonce)
     tx.value = 0; // exp10<18>();
     tx.gas = 300000;
     tx.gasPrice = 100 * exp10<9>();
-    tx.nonce = nonce;
+    tx.nonce = getNonce(from);
     std::stringstream ss;
     ss << "0x095ea7b3"
        << "000000000000000000000000"
        << toHex(jsToAddress("0xe1D4236C5774D35Dc47dcc2E5E0CcFc463A3289c"))
        << toHex(toBigEndian(jsToU256(amount)));
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, secret);
+    char* rawTx = signTx(tx, secret);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* aliceSendsEthPayment(AliceSendsEthPaymentInput input, BasicTxData txData)
@@ -68,7 +75,10 @@ char* aliceSendsEthPayment(AliceSendsEthPaymentInput input, BasicTxData txData)
        << toHex(jsToBytes(input.bobHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* aliceSendsErc20Payment(AliceSendsErc20PaymentInput input, BasicTxData txData)
@@ -87,7 +97,10 @@ char* aliceSendsErc20Payment(AliceSendsErc20PaymentInput input, BasicTxData txDa
        << "000000000000000000000000"
        << toHex(jsToAddress(input.tokenAddress));
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* aliceReclaimsAlicePayment(AliceReclaimsAlicePaymentInput input, BasicTxData txData)
@@ -107,7 +120,10 @@ char* aliceReclaimsAlicePayment(AliceReclaimsAlicePaymentInput input, BasicTxDat
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(input.bobSecret));
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* bobSpendsAlicePayment(BobSpendsAlicePaymentInput input, BasicTxData txData)
@@ -127,7 +143,10 @@ char* bobSpendsAlicePayment(BobSpendsAlicePaymentInput input, BasicTxData txData
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(input.aliceSecret));
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* bobSendsEthDeposit(BobSendsEthDepositInput input, BasicTxData txData)
@@ -141,7 +160,10 @@ char* bobSendsEthDeposit(BobSendsEthDepositInput input, BasicTxData txData)
        << toHex(jsToBytes(input.bobHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* bobSendsErc20Deposit(BobSendsErc20DepositInput input, BasicTxData txData)
@@ -158,7 +180,10 @@ char* bobSendsErc20Deposit(BobSendsErc20DepositInput input, BasicTxData txData)
        << "000000000000000000000000"
        << toHex(jsToAddress(input.tokenAddress));
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* bobRefundsDeposit(BobRefundsDepositInput input, BasicTxData txData)
@@ -177,7 +202,10 @@ char* bobRefundsDeposit(BobRefundsDepositInput input, BasicTxData txData)
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(input.bobSecret));
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* aliceClaimsBobDeposit(AliceClaimsBobDepositInput input, BasicTxData txData)
@@ -195,7 +223,10 @@ char* aliceClaimsBobDeposit(AliceClaimsBobDepositInput input, BasicTxData txData
        << toHex(jsToBytes(input.bobHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* bobSendsEthPayment(BobSendsEthPaymentInput input, BasicTxData txData)
@@ -209,7 +240,10 @@ char* bobSendsEthPayment(BobSendsEthPaymentInput input, BasicTxData txData)
        << toHex(jsToBytes(input.aliceHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* bobSendsErc20Payment(BobSendsErc20PaymentInput input, BasicTxData txData)
@@ -226,7 +260,10 @@ char* bobSendsErc20Payment(BobSendsErc20PaymentInput input, BasicTxData txData)
        << "000000000000000000000000"
        << toHex(jsToAddress(input.tokenAddress));
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* bobReclaimsBobPayment(BobReclaimsBobPaymentInput input, BasicTxData txData)
@@ -244,7 +281,10 @@ char* bobReclaimsBobPayment(BobReclaimsBobPaymentInput input, BasicTxData txData
        << toHex(jsToBytes(input.aliceHash))
        << "000000000000000000000000";
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
 }
 
 char* aliceSpendsBobPayment(AliceSpendsBobPaymentInput input, BasicTxData txData)
@@ -263,5 +303,32 @@ char* aliceSpendsBobPayment(AliceSpendsBobPaymentInput input, BasicTxData txData
        << "0000000000000000000000000000000000000000000000000000000000000020"
        << toHex(jsToBytes(input.aliceSecret));
     tx.data = jsToBytes(ss.str());
-    return signTx(tx, txData.secretKey);
+    char* rawTx = signTx(tx, txData.secretKey);
+    char* result = sendRawTx(rawTx);
+    free(rawTx);
+    return result;
+}
+
+char* privKey2Addr(char* privKey)
+{
+    Secret& secretKey = *(new Secret(privKey));
+    std::stringstream& ss = *(new std::stringstream);
+    ss << "0x" << toAddress(secretKey);
+    return stringStreamToChar(ss);
+};
+
+char* pubKey2Addr(char* pubKey)
+{
+    Public& publicKey = *(new Public(pubKey));
+    std::stringstream& ss = *(new std::stringstream);
+    ss << "0x" << toAddress(publicKey);
+    return stringStreamToChar(ss);
+};
+
+char* getPubKeyFromPriv(char* privKey)
+{
+    Public publicKey = toPublic(*(new Secret(privKey)));
+    std::stringstream& ss = *(new std::stringstream);
+    ss << "0x" << publicKey;
+    return stringStreamToChar(ss);
 }
