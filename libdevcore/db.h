@@ -29,8 +29,5 @@
 #include <rocksdb/db.h>
 #include <rocksdb/write_batch.h>
 #else
-#include <leveldb/db.h>
-#include <leveldb/write_batch.h>
 #endif
 #pragma warning(pop)
-#define DEV_LDB 1
