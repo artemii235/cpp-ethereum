@@ -88,10 +88,6 @@ endif()
 # project name and version should be set after cmake_policy CMP0048
 project(cpp-ethereum VERSION "1.3.0")
 
-if (NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/evmjit/.git)
-    message(FATAL_ERROR "Git submodules not initialized, execute:\n  git submodule update --init")
-endif()
-
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY On)
 
 include(EthCcache)
@@ -119,11 +115,6 @@ hunter_add_package(libjson-rpc-cpp)
 find_package(libjson-rpc-cpp CONFIG REQUIRED)
 
 include(ProjectSecp256k1)
-include(ProjectLibFF)
-
-# Import binaryen library before hera to make it available also to testeth.
-include(hera/cmake/ProjectBinaryen.cmake)
-
 find_package(Threads)
 
 if(MINIUPNPC)
@@ -134,43 +125,13 @@ set(UTILS_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/utils")
 
 configure_project()
 
-if (HERA)
-    add_subdirectory(hera)
-endif()
-
 #Global include path for all libs.
 include_directories("${CMAKE_CURRENT_LIST_DIR}")
 
 add_subdirectory(libdevcore)
 add_subdirectory(libdevcrypto)
-add_subdirectory(libp2p)
-
-add_subdirectory(libethash)
 
 add_subdirectory(libethcore)
-add_subdirectory(libevm)
-add_subdirectory(libethereum)
-add_subdirectory(libethashseal)
-
-add_subdirectory(libwebthree)
-add_subdirectory(libweb3jsonrpc)
-
-if (EVMJIT)
-    add_subdirectory(evmjit)
-endif()
-
-add_subdirectory(eth)
-
-if (TOOLS)
-    add_subdirectory(ethkey)
-    add_subdirectory(ethvm)
-    add_subdirectory(rlp)
-endif()
-
-if (TESTS)
-    enable_testing()
-    add_subdirectory(test)
-endif()
 
 # TODO: Split out json_spirit, libscrypt and sec256k1.
 add_subdirectory(utils)

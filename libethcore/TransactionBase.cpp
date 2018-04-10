@@ -20,7 +20,6 @@
  */
 
 #include <libdevcore/vector_ref.h>
-#include <libdevcore/Log.h>
 #include <libdevcrypto/Common.h>
 #include <libethcore/Exceptions.h>
 #include "TransactionBase.h"
@@ -96,8 +95,7 @@ TransactionBase::TransactionBase(bytesConstRef _rlpData, CheckTransaction _check
 	}
 	catch (Exception& _e)
 	{
-		_e << errinfo_name("invalid transaction format: " + toString(rlp) + " RLP: " + toHex(rlp.data()));
-		throw;
+		throw _e;
 	}
 }
 
