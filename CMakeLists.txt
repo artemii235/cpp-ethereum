@@ -99,8 +99,8 @@ include(EthUtils)
 
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
-hunter_add_package(Boost COMPONENTS program_options filesystem system thread)
-find_package(Boost CONFIG REQUIRED program_options filesystem system thread)
+hunter_add_package(Boost COMPONENTS system)
+find_package(Boost CONFIG REQUIRED system)
 
 hunter_add_package(jsoncpp)
 find_package(jsoncpp CONFIG REQUIRED)
@@ -115,7 +115,6 @@ hunter_add_package(libjson-rpc-cpp)
 find_package(libjson-rpc-cpp CONFIG REQUIRED)
 
 include(ProjectSecp256k1)
-find_package(Threads)
 
 if(MINIUPNPC)
     find_package(Miniupnpc 1.8.2013 REQUIRED)
